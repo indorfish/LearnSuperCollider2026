@@ -1,0 +1,78 @@
+
+70 LITTLE LAMBS
+
+Seventy exercises designed to teach computer music, using two songs.
+The most common is "Mary Has a Little Lamb", since it's simple and recognizable enough.
+The second is "Daisy Bell" since it was a classic song used in early musical voice synthesis.
+Before proceeding with the exercises, what is our goal?
+The primary goal is NOT audio synthesis, although audio synthesis is a relevant goal.
+The primary goal of these exercises lies in using the computer to create and/or process "musical sequences".
+Thus, our emphasis will overwhelmingly be on the control of MIDI data and patterns.
+We will only rely on rudimentary forms of synthesis and use samples in some cases.
+To understand our goal better, we should think ourselves as a conductor trying to tell the computer *how* to perform a score.
+Where should it speed up? Where should it slow down? What chords should it use?
+By the end of all this, the hope is that we will be able to generate a convincing enough performance of the songs of choice with just the click of a button.
+
+
+
+=============================================================================
+Lamb 01
+    Create four synthdefs corresponding to the four notes of "Mary Had a Little Lamb".
+Specify the notes in terms of raw frequencies -- you should in fact calculate these frequencies directly in code, recalling that A4 = 440Hz.
+Use 12-TET. The scale factor is 2^(k/12) in case you forgot.
+Play the melody manually using Ctrl+Enter then free. Remember to store the synth defs in variables so that you can free them!
+    x = {}.play;
+    x.free;
+Now, read the documentation for "Env" objects, "Line" and "XLine".
+These are envelope objects that allow us damp the amplitude of the notes over time.
+Read the documentation for "doneAction" as well.
+Once you have understood all this, move to exercise 2.
+
+// note, incorporate decibels and amplitude parameters in this.
+
+-----------------------------------------------------------------------
+Lamb 02
+    Create four synthdefs whose amplitudes are controlled by envelope UGens, and have done actions to automatically manage memory.
+Specify the notes in terms of MIDI numbers instead of raw frequencies.
+Another thing to do - the higher the pitch, the sharper the decay. We want the higher-pitched notes to sound slightly more "stiff" and hammer-like, while the lower-pitched notes ring out a bit more.
+Note - for this exercise, we still play using Ctrl+Enter but this time we do not have to free the synthdef manually.
+
+
+-----------------------------------------------------------------------
+Lamb 03
+    Research the documentation for any "sleep" functionality in SuperCollider.
+If there exists one, then we will simulate timing by resting in between notes.
+You will read in the documentation, how to create SynthDefs.
+Create a SynthDef called "lamb" which plays the tune of "Mary Had a Little Lamb" when passed the "play" message i.e. we invoke lamb.play;
+Its sole parameter should be "tempo", and this tells it how long to rest between notes.
+Calculate the rests yourself (Hint: multiples of smallest unit of time in the song)
+
+
+------------------------------------------------------------------------
+Lamb 04
+    Adjust the SynthDef so that the rhythm deviates slightly from the computed timing, in a random manner.
+Also let the frequency of the notes deviate. Call this new SynthDef "drunklamb" if you want.
+In this exercise, you will experiment with different types of randomness in SC.
+Do some research on how you can implement an arbitrary probability distribution in SC.
+
+
+-------------------------------------------------------------------------
+Lamb 05: MIDI control
+    Research on how MIDI works in general, then how MIDI works in SC.
+If you have a MIDI controller e.g. on your phone, hook it up. If not see how you can use the computer keyboard for MIDI control.
+    5a. Play the tune with your controller.
+    5b. Create a synthdef such that whatever note you play triggers a transposed MHLL tune with your input note as the root. Let the tempo adjust with frequency - higher pitch means faster tempo.
+    
+
+---------------------------------------------------------------------------
+MORE SC AND COMPUTER MUSIC CONCEPTS
+
+-   Nodes, Groups, Buses, Order-of-Execution
+-   Multichannel expansion and stereo
+-   Patterns (very important)
+-   Duplication
+-   Musical state machines
+-   Random sampling of an array
+
+
+

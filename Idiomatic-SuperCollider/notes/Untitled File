@@ -1,0 +1,33 @@
+
+Interpreter variables: x, y, z, etc except s which is reserved for the audio server.
+    s.boot; s.quit;
+
+Environment variables which *always* begin with a tilde when declared or used.
+    ~myVariable = 10;
+    ~myVariable.postln;
+
+Local variables within a block statement: they are only local to the block itself.
+    (var hello = "Hello";
+     hello.postln);
+
+Function arguments.
+    { arg x, y;
+      x+y}
+or
+    {|x, y|; x+y}
+
+User-defined classes: 
+    Foo
+
+
+~arr = [1, 2, 3, 4];
+~arr = (1..4);
+~arr = Array.series(1, 4, 1);
+~arr = (1,1..4)
+
+~arr.at(index);
+~arr.index;
+
+~arr = Array.series(1,100,1);
+~arr = Array.geom(1,12,~twelfthRoot2);
+

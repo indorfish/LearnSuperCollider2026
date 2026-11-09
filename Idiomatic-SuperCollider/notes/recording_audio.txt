@@ -1,0 +1,34 @@
+
+METHOD 1:
+
+    s.makeWindow;
+
+GUI-based configuration. Intuitive.
+
+-----------------------------------
+
+METHOD 2:
+
+Code-based.
+
+(
+    Routine {
+        s.record;
+        // s.record(PATH, DURATION); // old file is always overwritten
+        wait(0.02); // wait for server to catch up
+        
+        // audio 
+        
+    }.play;
+)
+
+-----------------------------------
+ATTRIBUTES
+
+Attributes of the output audio format
+    s.recSampleFormat = "int32" or "int24" or "int16"
+    s.recHeaderFormat = "wav" or "aiff"
+    s.recChannels = 
+
+
+

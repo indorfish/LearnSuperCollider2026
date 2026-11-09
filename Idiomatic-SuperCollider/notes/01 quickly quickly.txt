@@ -1,0 +1,466 @@
+
+
+
+-   What are the different types of variables in SuperCollider and how do you declare them?
+list as many as possible.
+
+    -   'quick' variables (not sure what they're called: the letters a-z in the global scope.
+        Some such as 's' are reserved.
+        Update: they're called "Interpreter variables".
+    -   'local' variables within a code block, declared by
+            var foo;
+        Remain in scope within a code block/compound statement block, or function block.
+    -   environment variables which are prefixed by a tilde. Remain in scope within an environment.
+            ~foo
+    -   function arguments
+            arg foo, or |foo| as the first line of a function block.
+    -   user-defined classes: SC assumes that any variable which begins with uppercase is a class
+            Foo
+
+
+-   Associativity of method 'calls' in SuperCollider?
+    
+    Left-associative by default.
+        `object.method1.method2` can be read as `(object.method1).method2`
+
+
+-   What's the difference ebtween Strings and Symbols?
+    
+    -   I haven't read the documentation but I can make a guess.
+    A String, whose literal is in the form of double-quotes enclosed characters e.g.
+    "Hello"
+    A Symbol in contrast, is best thought of as being like an enumeration.
+    A symbol is for letting us use names rather than ids for parameters.
+        \hello
+        'hello'
+
+
+ORDER OF OPERATIONS AND ASSOCIATIVITY
+-   Left-to-right, left associativity.
+
+
+
+ARRAYS
+
+-   Define an array containing the numbers 0 to 9 in order. (Hint: two ways)
+
+    -   ~arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    -   ~arr = (0..9);
+    -   ~arr = Array.series(0,9,1);
+
+
+-   Locate the items at the 5th position in that array.
+
+    -   arr.at(4)
+    -   arr[4];             // preferred.
+
+-   Locate the items at the 1st, 3rd and 4th positions in that array.
+
+    -   arr.at([0, 2, 3]);  // returns an array of the requested items
+    -   arr[[0, 2, 3]];     // also valid. I prefer using 'at' in this case
+    
+-   Create an array consisting of all multiples of 3 from 0 to 1000 in order.
+    i.e. 0, 3, 6, ..., 999
+    
+    -   ~arr = Array.series(0, 1000, 3);
+                Array.series(start, stop, step)
+    -   ~arr = (0,3..1000);
+               (start, step..stop)
+
+-   Create a geometric series array of ten items which starts with 1 and scales by half with each successive term.
+
+    -   ~arr = Array.geom(10, 1, 0.5);  // size ten, start with 1 and half each successive term
+
+-   Create an array consisting of ten random integers between 0 and 9 inclusive
+
+    -   ~arr = Array.rand(10, 0, 9);
+
+-   Create an array consisting of the number 0 repeated 100 times.
+
+    -   ~arr = 0.dup(100);      // duplicate 0 100 times
+    -   ~arr = 0 ! 100;                // syntactic sugar
+    
+-   Pointwise operations: write the most direct way you know, for applying an offset to the values in an array
+    i.e. add a constant to every term in the array. Let the constant be 1 in this case.
+    
+    -   ~arr = ~arr + 1;
+    The scalar is implicitly expanded into an array 
+
+-   Can you guess how to apply binary operations pointwise to an array?
+    Let a and b be arrays, and let * be some binary operator defined for all items in each array.
+    (it helps if the array consists of items of the same type).
+    Define a * b as the array c such that c[i] = a[i]*b[i]. How can you do this in SuperCollider?
+    
+    -   That's it. Just do the binary operation on the arrays
+
+-   Is this sytactically valid?
+    [1, 2, 3] + [0, -1, 0, -1, 1]
+    
+    -   Yes it is. Before you get angry, keep in mind one of SuperCollider's design philosophies:
+    it is a live coding environment. When a singer is performing on stage, no matter what happens
+    the show must go on.
+    SuperCollider usually tries its best to NOT crash during runtime (the show must go on).
+    Hence, operations that would be silly or ill-defined in other languages are sometimes
+    (though not always) given meaning in SuperCollider.
+    The meaning of the above is that the shorter array is extended modulo itself until it matches
+    the length of the longer array, then the binary operation is performed and that is the result
+    returned:
+        [1, 1, 3, 0, 3]
+    But if this makes you uncomfortable there is good news - you can impose discipline on yourself
+    and make sure stuff like this does not happen without your knowledge.
+
+-   How do you check the length of an array?
+
+    -   ~arr.size
+
+
+FUNCTIONS AND SUBROUTINES
+
+-   Define a subroutine named 'sayHi' that simply prints "Hello world" to the console.
+What's a subroutine? sigh, it's just a function. Think of it as a function that does not return a value. 
+Also call/evaluate the function.
+
+    -   ~sayHi = { "Hello, World".postln };
+    -   ~sayHi.value;
+    -   ~sayHi.();
+
+-   Define a function that first greets the user returns a string "Hello, World"
+
+    -   ~sayHi = { 
+                    var hello;
+                    "Hi, user".postln;
+                    hello = "Hello, World";
+                    };
+    Notice that there is no return statement. SuperCollider assumes that the last line of the function
+    is what you intend to return.
+    This implies that functions in SuperCollider *always* return a value which is the value of the last
+    line. But what happens if you do not declare a local variable but instead just use a string literal
+    as the final line? Test it out.
+    
+-   How would you define an anonymous function in SuperCollider?
+
+    No clue. Perhaps use the curly braces without assigning it a value.
+
+-   Define a function named 'mySquare' that takes as input a number, then computes and returns its square.
+
+    -   ~mySquare = {
+                        arg input = 0; // defaults allowed
+                        var output;
+                        output = input.squared;
+                    };
+    -   ~mySquare = {
+                        | input |
+                        var output;
+                        output = input.squared;
+                    };
+    -   Calling the function...
+        ~mySquare.(10);     // result is 100
+
+-   Define a function named 'addUp' which sums two numbers given as input.
+
+    -   ~addUp = {
+                    | x1 = 0, x2 = 0 |
+                    var output;
+                    output = x1 + x2;
+                 };
+    
+
+What's the deal with "literal" versus "Non-Literal" classes in SuperCollider?
+
+-   The deal is that the syntax for initializing them is generally different.
+    In SuperCollider, almost everything is a class (even the integers, floats, etc.).
+    This is reminescent of Python and JavaScript if you're familiar with those.
+    Literals can simply be initialized from their literals! You know what a literal is...
+    -   x = -26;                // literal integer
+    -   x = "Hello, world";     // literal string
+    -   x = 3.14158;            // literal float
+    -   x = 'foo';              // literal symbol
+    -   x = [1, 2, 3];          // literal array (though non-literal arrays exist)
+    x is an instance of the respective class in each case.
+    But there are some classes, such as `Window` where there is no syntactic literal that can be
+    used to initialize them (at least the language does not specify such).
+    In this case, we initialize objects of these classes by passing the `new` message to the class name.
+    -   x = Window.new;
+    That's the difference. If the designers of the language so felt inclined they could design
+    a literal for this if they wanted e.g. x = w'ABCD'
+    But what would be the point of this?
+
+
+What's your go-to function for a uniformly-distributed discrete random variable in a range of 1 to 10 inclusive?
+To put it in English, generate a random integer from 1 to 10 inclusive, where any integer is equally-likely.
+
+-   x = rrand(1, 10);   
+    That's it. rrand stands for range random.
+    There's also x = exprand(1, 10)
+    That one always returns floats, and it implements an exponentially-distributed random variable.
+
+How do you get random floats?
+
+-   rrand can also be used, but the arguments should be written as float literals.
+    There are two ways to do this: direct and indirect.
+    -   x = rrand(1.0, 10.0);           // direct
+    -   x = rrand(a/1.0, b/1.0);        // indirect. Useful in functions for example where a, b are args
+
+
+Given an array, pick a random item from the array
+
+-   There are two approaches we can use. The first is to use random indexing.
+    -   x.at(rrand(0, x.size - 1));
+    -   x[ rrand(0, x.size-1) ];
+    The second is to use the `choose` method for arrays.
+    -   x.choose;
+    This turns x into something like a random variable.
+
+Create an array of two strings "H" and "T". Implement a "fair coin" so that the choice between H and T is equal.
+Next, implement a biased coin where H appears 3/4 of the time and T appears 1/4 of the time.
+    -   a = ["H", "T"];
+    -   a.choose;
+    -   b = ["H", "H", "H", "T"];
+    -   b.choose;
+Alternatively...
+    -   w = [3/4, 1/4];         // weights
+    -   a.wchoose(w);           // weighted random var.
+A useful method to learn is the 'normalizeSum' method. What this does on an array of numbers is to rescale all the numbers so that they all sum to 1.
+
+
+TYPES
+
+-   What is the null type in SC?
+        nil
+
+
+
+FUNCTION DUPLICATION
+
+Just a heads-up in SC.
+How do you create an array populated by 100 of random numbers?
+You may recall the dup function...
+
+    rrand(1, 10).dup(100);
+    rrand(1, 10) ! 100;
+
+This does not work how you'd expect. The left is evaluated first, then the result is used to evaluate the entire statement. All you get is an array of 100 of the same item, where that item is a randomly-picked number.
+The solution to this is to duplicate *functions* instead of...function calls, I guess.
+
+    { rrand(1, 10) } ! 100;
+
+The mental model I like to use is that the process is duplicated 100 times and then each process is evaluated and the results are evaluated.
+This is just how the language is designed, don't think too hard about it.
+    
+
+
+CONDITIONAL LOGIC AND BRANCHING AKA FLOW CONTROL
+
+IF statements
+-   if (expr, trueFunc, falseFunc): if expression is true, evaluate the truefunc. Else...?
+Head or Tails:
+-   x = ["H", "T"];
+    c = x.choose;
+    if (c == "H",
+        "You got lucky".postln,
+        "Too bad".postln
+        );
+Note - you can be more creative about what runs.
+    if (c == "H",
+        f.(),
+        g.()
+       );
+You can use the typical binary logical operators:
+    &&, ||, what of negation?
+The SC-specific syntax is...
+    expr1.and(expr2)
+    expr1.or(expr2)
+    expr1.not
+
+How to do if-elseif-elseif-else?
+
+
+LOOPS AND ITERATION
+Don't repeat yourself (DRY). Use iteration to kill repetition.
+'do' and 'collect' are the heroes of the story.
+'do' is like a method. Its argument is a function that tells us what to do for each item in the iteration. 
+It is defined for arrays and other collections, but also for integers!
+
+    x.do( ~foo ); // the function can be defined directly as well
+    x.do ( { "Hi".postln; } );
+
+That last one is useless since it does not address the items in x. Instead do this...
+
+    10.do( {"Hi".postln;} );
+
+
+Loop variables: all you need to do is to define an argument for the function. The current item is then passed as the argument.
+e.g. 10.do( {arg i; arg.postln;} );
+
+'do' does not modify its receiver, and when you use the 'do' method x.do( ) evaluates to x.
+What happens when you supply two args? Is it meaningful? What is the second argument? Try it and take note.
+
+What is 'collect'? Collect is what some 10X programmers would call a "map".
+
+    y = x.collect( {arg i; mapFunc.(i)} );
+
+
+Note also that we can access index and item by using two function variables e.g.
+
+    y = x.collect( {|i, j|; mapFunc.(i,j) } );
+
+
+======================================================================================
+MAKING SOUND
+
+s = Server.local;
+s.samplerate;
+s.options.blocksize; 
+Ctrl (or Cmd) + D will be of great help
+In audion signals are processed *per block*
+
+SinOsc.ar
+SinOsc.kr
+SinOsc.ir: initialization rate. Ignore this.
+
+note: the dot-*r 
+
+
+To make sound, one approach is to define a function building a UGen, then call the function with the .play method e.g.
+
+    { SinOsc.ar(1,1,1,)
+
+Let fcn represent a function block e.g. {...}
+The following messages are of interest:
+    fcn.play;
+    fcn.plot;
+    fcn.scope;
+    fcn.trace;
+
+Sample-level operations:
+Let ugen be a UGen. The following operations are to be interpreed as if the operation was applied to each sample of the UGen:
+    ugen + c; // adding a constant
+    ugen * c; // multiplying by a constant
+    ugen1 + ugen2; // adding two UGens
+    ugen1 * ugen2; // adding two UGens
+
+
+Multichannel expansion
+SuperCollider is a bit unusual but that's what makes it so powerful!
+The audio is usually not in "mono" by default. This means if you have 2 or 3 or 200 audio channels, you have to tell SuperCollider how to route audio to each of these.
+If you say nothing, then the audio simply gets routed to the first audio channel.
+On headphones (use with caution!) this sounds like the audio is only coming from the left ear.
+One way to expand the audio to another channel, is to use duplication.
+Let ugn be a UGen.
+    ugn.dup(k) // or ugn ! k
+expands the ugn to k consecutive channels, beginning with the lowest-indexed available channel.
+If k=2 then this is like basic stereo (it's not stereo since it's not mixed. It's just 2-channel).
+
+
+LFSaw vs Saw:
+The LFSaw is band-limited and designed to run at low frequencies.
+Saw is not band-limited.
+
+
+Synths
+Let syn be a Synth object. The following operations are defined:
+    syn.free; // frees synth from memory
+
+
+Changing synth parameters during a synth's lifetime:
+The best way to do this is to first define the synth in the body of a function, but declare arguments at the start.
+Then we can use the set method. An example is worth a thousand words:
+
+(
+~fn = {
+    arg freq = 260;
+    var sig;
+    // sig = SinOsc
+    sig = sig ! 2;
+};
+)
+
+x = ~fn.play;
+x.set(\freq, 300, \par2, 10, ...);
+
+
+
+======================================================================
+MAKING SOUND PT 2
+
+ENVELOPES: Quite important.
+Read up on Line, XLine, EnvGen
+Let ~aud be an audio-gnerating UGen and ~elp be an envelope UGen.
+To apply the envelope, it is sufficient to multiply ~aud by ~elp.
+    ~sig = ~aud * ~elp;
+
+
+Why do you need a doneAction?
+Every UGen takes up memory on the server. Use s.plotTree to inspect the node tree.
+Just because a UGen is not outputting any sound e.g. by generating only zeroes for every audio block doesn't mean it is not consuming memory.
+To save memory, SuperCollider allows us specify a doneAction which lets us tell the server what to do with a UGen once it has "finished" generating its signal.
+What does "finished' mean, though?
+Anyway, the doneAction is specified as a simple integer from 0 upwards.
+0 or 2 are the most common.
+0 is do nothing, and 2 is free the synth.
+You can specify a doneAction as an argument for an envelope e.g.
+    env = Line.kr(1, 0, 0.2, doneAction: 2);
+There are other doneActions and not all UGens have doneActions.
+
+
+What could cause XLine to fail?
+XLine should not have negative arguments I think.
+
+
+What is EnvGen?
+-   Env is a generic envelope I think.
+EnvGen allows you to specify the shape of the envelope, to your heart's desire.
+
+____________________________________________________________________________
+EXERCISES:
+
+1. Play a plain SinOsc at a frequency of 220 Hz
+2. Play a SinOsc which begins at 220 Hz, but its frequency oscillates by a swing of up to 10 Hz,
+    at a rate of 10 Hz. Adjust the rate and the swing.
+3. Use that mess of a sound in 2 to control the frequency of another SinOsc.
+4. Do a quick read on the harmonic series for different waves:
+    Triangle, Square, Sawtooth, Impulse, etc.
+    Compare the sound with SC's native LFTri, Pulse, Saw, Impulse unit generators.
+5. Try creating whitenoise by summing multiple SinOsc's with very close frequencies.
+
+-   R2D2-style music (random number generator + SinOsc + envelope)
+
+
+
+========================================================================
+SYNTHDEF AND SAMPLING
+
+What is a SynthDef?
+I believe it is a more robust way of handling synth function definitions.
+The default method is...
+    ~fn = {
+            arg amp = 1.0, freq = 440.0, phase = 0;
+            SinOsc.ar(amp, freq, phase);
+        }
+Then to play it...
+    x = ~fn.play;
+
+We can set arguments dynamically using set method.
+x.set(\amp, 0.5);
+Do practice with that approach first before worrying about SynthDefs.
+
+
+To create a SynthDef, you need a SynthDef "machine" (it's just a metaphor).
+How to use the SynthDef machine:
+    SynthDef.new(....)
+
+We need to feed ingredients to the machine. These are...
+    -   Synth name (as string or symbol i.e. "foo" or \foo)
+    -   UGen graph function, which is just the function block governing the behaviour of the c
+    -   Singal bus lines
+    -   
+
+
+
+
+
+
+
+
+
+

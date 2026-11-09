@@ -1,0 +1,21 @@
+
+SUPERCOLLIDER QUIZ 01
+For a quick jogging of the memory.
+
+
+-   Write a short "Hello World" program. Do it on a napkin or in the sc Interpreter.
+It should simply print "Hello World". Be terse.
+
+-   Write a hello world SC program to play a simple sine wave at 440Hz.
+Be careful! What is the precondition for playing audio in SC?
+
+-   How do you run i.e. interpret a single line? What of a block of lines?
+What keyboard shortcut is convenient for this?
+
+-   Which variable name is reserved for the server?
+What are the three different ways of defining variables in SC? What distinguishes these?
+
+-   What is a synth def in SC? How does one quickly deallocate memory for all synthdefs?
+How does one deallocate a specific synthdef?
+
+

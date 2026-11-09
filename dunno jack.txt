@@ -1,0 +1,98 @@
+
+
+ALSA
+What is ALSA? Why is it not enough for Linux audio? Why can't we just plug and play?
+What are the problems?
+
+
+
+ALSA is Linux's audio driver.
+
+What is Pulseaudio?
+
+What is JACK?
+    My guess is that all of this allows you to route audio streams.
+You can take a stream being generated somehow and route it to some destination.
+If you have ten speakers and four microphones connected to the computer, you can route whichever mics to whichever speakers.
+I'm also guessing that these devices show up as processes on the computer, so Jack's inputs are processes or process ID's.
+
+    JACK gives you lower latency, too.
+    JACK relies on ALSA. It is an interface to ALSA. JACK is NOT a driver. It's an interface to ALSA,
+        but programs can treat it as a driver.
+    
+
+MORE FORMAL
+-   Revise Pulse Code Modulation, specifically how bit depth and sample rate relate to bandwidth.
+
+-   By default, expect 96KHz for recording and 48KHz for playback.
+
+-   Plain vanilla digital audio has no information about audio channels.
+    But how do we include channel information? The Pulse Code can itself contain that info!
+    The channel count may be specified such as 2:1 which means two channels.
+    
+
+-   ALSA is an interface to the kernel's sound driver.
+    ALSA takes a Pulse Code PCM signal and sends it to the hardware, through the sound driver.
+    
+-   Most DACs can only handle one signal at a time (no parallelism).
+    What's the solution? Multiplexing. Multiple signals will be mixed somehow, whether in time
+    or in frequency. Guess which is more efficient to do?
+
+-   alsalib was the first mixer program. For whatever reason, this was unsatisfying.
+
+-   Pulseaudio is not a driver, nor does it talk to drivers.
+    "Driver? Never heard of him"
+    It talks to ALSA instead. Your programs talk to PulseAudio and PulseAudio mixes the audio signals
+    that they generate.
+    Pulse is also nice enough to resample all the audio it receives so that they are in the same format -- same bit-depth, probably channel count too and dynamic range?
+    In any case, if one signal is 4-bit audio and the other is 16-bit audio, that can confuse ALSA.
+    Pulse handles this somehow by either upsampling the lower-bit signals or downsampling the upper
+    bit signals.
+
+-   JACK is also not a driver.
+    JACK stands for JACK Audio Connection Kit, and is an audio server.
+    Think of it this way - when you walk into a restaurant you don't head to the kitchen asking the
+    greasy chef for hamburgers.
+    You sit at the table, call the waiter and ask "I'd like hamburgers, nice sir".
+    The waiter heads to the kitchen and gives your order to the chef, who makes the hamburgers
+    and then gives the waiter the hamburgers, which the waiter delivers to you.
+    From your perspective, the kitchen may as well not exist!
+    What goes on in the kitchen - the cutting of onions, the frying, etc - is irrelevant.
+    You are the client and make a request to the waiter, and the waiter satisfies your request.
+    JACk is the waiter, ALSA can be thought of as the Chef at this level of abstraction.
+    PulseAudio too is a waiter.
+    JACK's emphasis is on low latency and realtime processing. I'm not using the restaurant analogy anymore.
+    JACK is quick and responds quickly, but I don't think it can do multiplexing.
+    If that's true then it explains my experiences with JACK - whenever I open an application
+    such as PureData which uses JACK, I usually can't hear audio from any other source.
+    Perhaps mixing adds a new layer of latency? Who knows.
+
+-   PipeWire is another audio server. It shows promise as a replacement for PulseAudio.
+
+-   qjackctl
+    A GUI for JACK.
+
+
+-   Once again, what is ALSA?
+    Advanced Linux Sound Architecture. It isn't a driver, but a software architecture consisting of
+    kernel drivers, an API and utility programs.
+    All this to make sound work properly.
+    You can apparently control ALSA directly, hence program sound with it.
+    The API library is called 'libasound'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
