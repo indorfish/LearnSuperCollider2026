@@ -94,7 +94,7 @@ s.waitForBoot({
 
     // ---- Tempo ----
     // duration 1.0 = 1 beat.  Set a comfortable tempo (~ quarter = 0.4s)
-    ~beat = 0.42;
+    ~beat = 1.42;
 
     // ---- Play a note list ----
     ~playSeq = { |notes, beat, ampScale = 1.0, pan = 0|

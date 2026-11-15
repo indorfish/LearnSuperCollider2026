@@ -1,0 +1,200 @@
+
+LONG SUMMARY OF STREAMS, PATTERNS, ROUTINES, ETC.
+
+In these notes I will only indicate what I believe is not obvious.
+
+
+-   Patterns give us the ability to *specify* an aspect of music (or audio).
+They give us a way to specify "dynamic musical transformations"; they tell us *what* should happen, not necessarily how it will be executed by the computer.
+In contrast, Routine tells us how the computer should execute a function.
+
+
+-   Routine <- Stream
+This means that Routine is a subclass of Stream.
+
+-   Why do Patterns even exist?
+One way to think of it is that a Stream is a process currently executing in memory (lazily-evaluated) while a Pattern specifies how to create a stream.
+A Pattern is analogous to a static program, while a Stream (and Routine) is analogous to a dynamically-executing process.
+This metaphor is quite useful - many distinct streams can be created from the same pattern.
+You use the `asStream` message for this.
+
+-   The Pattern class has different subclasses that return different kinds of objects.
+    -   Pfunc returns FuncStreams
+    -   Prout returns Routines
+    -   Pseries returns an arithmetic series
+    -   Pgeom returns a geometric series
+    -   
+
+
+-   RTFM on what each does and how to use them.
+But in omost cases, if p is a Pattern object then p.asStream creates a stream from the pattern.
+Multiple different streams can be created...
+    s1.asStream
+    s2.asStream
+    etc.
+
+
+-   You can do math with Pattern objects, as well as math with stream objects.
+The set of Pattern objects (and stream objects) is closed under some basic arithmetic operations. 
+Arithmetic is "point-wise".
+You can scale patterns, you can filter and map, etc.
+See the `select  and `collect` messages. Also, `reject`
+
+
+-   Here's how I think patterns are used to make music:
+1. Define the Pattern. This is the blueprint for sequencing. A static sequence, a rule for how to sequence stuff.
+2. Create one or several streams from your pattern.
+3. Inside a routine or other yieldable function thingy, use the stream object (not the pattern itself), calling the .next message on the object. Here is a simplified example:
+
+Pretend that a Synth named "\demo" already exists.
+(
+    var pattern, streams, dur;
+
+    // initialize them.
+    // inside is a function
+    pattern = Prout.new({
+        // a function that outputs a sequence of numbers.
+        loop({...});
+    });
+
+    stream = pattern.midicps.asStream;
+
+    Routine({
+        loop({
+                Synth(\demo, [\param1, stream.next]);
+                dur.wait;
+        })
+    }).play;
+)
+
+SuperCollider can look like spaghetti sometimes, but pay special attention to the stream.next inside the Routine.
+The idea in this patch is quite simple -- you describe a sequence with the Pattern (sequence of numbers, sequence of symbols, etc) then you convert this to a stream object, then you use that stream to control the parameters of your Synth over time by passing the `next` message.
+
+
+
+_______________________________________________________________________
+
+LIST PATTERNS
+
+-   Patterns that iterate over arrays in some way. Examples are:
+    -   Pseq: iterate over a list a certain number of times.
+        Pseq.new(#[1, 2, 3], 2);
+    -   Note - how the array elements get created is arbitrary. You can use functions to do so.
+        But the whatever must return a number or valid array item.
+    -   Pser
+    -   Prand
+    -   Pxrand (exclusive random i.e. no consecutive repeats)
+    -   Pshuf
+
+-   nil: a special argument to a Pattern that causes it to end.
+-   inf: a special argument to a List pattern that causes it to repeat forever.
+
+-   Patterns can be nested inside Patterns.
+The semantics of this is that if a Pattern encounters a Pattern as its argument, then it converts that input Pattern to a stream and executes it before moving to the next argument.
+    a = Pseq.new([1, Pseq.new([100,200], 2), 3], 3);
+This seems like an incredibly expressive feature; perhaps we can construct interesting sequences by nesting patterns to arbitrary depth.
+
+
+What is Task?
+
+Done.freeSelf
+
+
+________________________________________________________________________
+VALID ALGEBRA AND METHODS FOR PATTERNS, STREAMS
+
+-   midicps works on Pattern and Stream objects.
+
+
+
+_________________________________________________________________________
+EVENTS AND EVNIRONMENTS
+Recall that you can control the parameters of a Synth using the values obtained from a stream (as specified by a pattern). These patterns are called "value patterns" because they return a single value on each "next" message.
+But Synths may have multiple parameters - dozens if you're very ambitious.
+A proper Moog emulator for example would have at least twenty parameters.
+Is there any elegant way to control these parameters using patterns?
+Yes, that's what Environments and Events are for.
+
+As the documentation said, these allow us to build a `symbolic event framework for patterns`.
+SuperCollider makes it possible to sequence events using "event patterns".
+
+
+
+ENVIRONMENTS
+-   An Environment is just a data structure of key-value pairs...like a dictionary in Python.
+It maps symbols to values.
+-   There is always one currentEnvironment.
+For now I will think of this as the "active namespace" in SuperCollider.
+
+-   You can put a new symbol-value pair in the currentEnvironment in two equivalent ways:
+    -   currentEnvironment.put(\myVariable, 49);
+    -   ~myVariable = 49;
+    To retrieve it...
+    -   currentEnvironment.at(\myVariable);
+    -   ~myVariable;
+
+-   Creating environments
+Once again I will think of this like creating namespaces.
+
+    e = Environment.make({
+            ~a = 100;
+            ~b = 200;
+            ~c = 300;
+    });
+
+-   Using an environment
+Using an environment means *temporarily* replacing the currentEnvironment with the one you have made.
+
+    e.use({ ~a + ~b + ~c }).postln;
+
+    // using directly after creasion...
+    e = Environment.use({
+            ~a = 10; ~b = 20; ~c = 30;
+            ~a + ~b + ~c
+    }).postln;
+
+
+-   Events: a subclass of Environment.
+Just think of them as mapping symbolic names of musical parameters, to their value.
+\freq to 330.3, \amp to 11.29,
+
+
+-   Pbind
+The bridge between the usual value pattern sequencing, and event patterning.
+a = Pbind(\par1, pattern1, ...
+          \par2, pattern2, ...
+          ...
+          \parN, patternN);
+// a.asStream
+a.play;
+
+
+// event Streams require a prototype event as input.
+// this example uses an empty Event as a prototype
+4.do({ stream.next(Event.new).postln; });
+
+It's often advised to use the "protoEvent" and override its defaults.
+    Pbind.new.play;    // uses protoEvent default Event.default
+    Pbind(\dur, 0.1).play; // override default duration
+    Pbind(\dur, 0.1,
+          \amp, 0.6,
+          \midinote, Pseq(...)
+    ).play;
+
+
+-   SEE THE TUTORIAL FOR PITCH MODEL (Events and Patterns pt 5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

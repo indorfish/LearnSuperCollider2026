@@ -1,0 +1,130 @@
+
+(NOTE - TURN THESE INTO SLIDES)
+
+
+WHY LEARN PATTERNS IN SUPERCOLLIDER?
+
+We're making music with code, right? Music is dynamic and often involves a sequence of discrete state changes. For example, changes in note frequency.
+How would we represent these changes and when they occur?
+SC allows us do this with Streams and Patterns - an abstraction that generates sequences of numbers.
+These numbers can be used to represent whatever state we like.
+
+
+0. SuperCollider is object-oriented. OOP is a key paradigm.
+
+1. Streams
+A Stream represents a lazily-evaluated sequence of values.
+Practically, any object that responds to two messages - `next` and `reset` - has some (or all) properties of a Stream.
+In SC, any object can respond to the `next` and `reset` messages.
+The difference is that for most objects, the resulting sequence is just a constant sequence of values - the same as the object itself.
+Streams may be finite or infinite, and these.
+Finite streams eventually return the `nil` object after a certain number of increments.
+Infinite streams always return a non-nil value no matter how many times the next method is called.
+
+Streams have two subclasses - FuncStream and Routine.
+Alls you need to know about these are that they share similar behaviour.
+    FuncStream lets you specify a function that execute in response to `next` and `reset`.
+    Routine is a special kind of function that can act as a stream.
+        The easiest mental model is that it is a "stateful function" - each time you call it, 
+        its internal state updates in general.
+
+Operations on Streams:
+Math operations can be done on stream-type objects either by message-passing the name of the math operation e.g. 'squared', or by using operators.
+If a and b are streams, and x is either a or b then so are the following...
+    x.squared
+    a + b
+Filtering operations are also defined for streams. If a is a stream then the following are also streams:
+    a.collect(...)
+    a.select(...)
+    a.reject(...)
+
+SuperCollider is for making music! How do we actually make music with Streams?
+It is not demonstrated here, but here are the use cases:
+    -   We can stream a sequence of pitches. The next pitch is evaluated when we call the 'next'
+        message
+    -   Musical state machines! The numbers returned by a Stream do not have to represent pitches.
+        Create a SynthDef whose internal state is controlled by a number, then stream values
+        to change the internal state.
+
+More about Streams can be learned from the book A Little Smalltalk by Timothy Budd. He calls them Generators and
+shows how they can be used to solve problems like the "eight queens" problem etc.
+
+
+
+
+2. Patterns
+Patterns also represent sequences, but in a different way from Streams.
+Think of a Pattern as a recipe for a Stream.
+A Pattern is to a Stream as a program is to a process; you can have multiple instances of a program running as different processes (you can have multiple independent streams created from the same pattern).
+
+A pattern can be created from any object that responds to the `asStream` message i.e.
+    x.asStream  // if x is a pattern, then x.asStream is a stream
+Guess what it does? This method is defined for all objects by default, and they simply return themselves as the stream when the asStream message is passed to them.
+
+Pattern has two subclasses that extend its functionality.
+    Pfunc is a pattern that returns a FuncStream when the asStream message is called.
+    Prout returns a Routine.
+Remember, the idea is to make two independent stream-type objects from the same recipe.
+    Pseries is a convenient pattern that impelements an arithmetic sequence
+    Pgeom implements a geometric sequence
+Strictly-speaking, they are not necessary but in a live-coding environment it's far quicker to use them since they're a common idiom anyway.
+
+
+3. ListPatterns
+These are Patterns that iterate over arrays in a defined manner.
+All ListPatterns have, as an argument, the array instance and the number of repeats of iteration i.e. number of loops.
+Think of these as simply like 8-step sequencers or whatever.
+Examples:
+    -   Pseq
+    -   Pser, Prand
+Operations on Patterns
+Patterns behave analogously to Streams with math and filtering operations.
+The resulting object is also a Pattern, which can be converted into a stream.
+"Nesting" is an important behaviour of Patterns; if a Pattern is passed as an argument to some other Pattern's constructor, the result will be as if the argument Pattern was spliced into the pattern stream of the "host".
+This is best demonstrated than described.
+Nesting is more explicit in ListPatterns.
+
+
+4. Environments
+Why do they exist? They allow you map symbols to values.
+It's like a dictionary in Python, of symbol and value pairs.
+    // set. Equivalent to ~myvariable=123
+    currentEnvironment.put(\myvariable, 123);
+    // get. equivalent to ~myvariable e.g. ~myvariable.postln
+    currentEnvironment.at(\myvariable)
+They have the `make` and `use` methods. Honestly, these aren't too relevant for now.
+
+
+5. Events
+An Event is a subclass of Environment.
+Read this for finer control over how things happen. I do not even understand the problem they are intended to solve.
+
+In the most general sense, Pbind is just a way to give names to values coming out of the types of patterns we just saw.
+When you ask a Pbind stream for its next value, the result is an object called an Event. Like a Dictionary (which is a
+superclass of Event), an event is a set of "key-value pairs": each value is named by a key.
+e = (freq: 440, dur: 0.5);
+// an Event
+​
+e.at(\freq)
+// access a value by name
+e[\freq]
+e.freq
+// See IdentityDictionary help for more on this usage
+​
+e.put(\freq, 880);
+// Change a value by name
+e[\freq] = 660;
+e.freq = 220;
+​
+e.put(\amp, 0.6);
+// Add a new value into the event
+e.put(\dur, nil);
+// Remove a value
+A Pbind is defined by a list of pairs: keys associated with the patterns that will supply the values for the events.
+Things get interesting when the names associated with Pbind's sub-patterns are also SynthDef arguments. Then it
+becomes possible to play new Synths with Pbind, and feed their inputs with different values on each event.
+
+
+
+
+
