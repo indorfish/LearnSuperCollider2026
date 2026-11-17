@@ -5,7 +5,7 @@ SCD is a really complicated language and you only get good through repeated expo
 You're also encouraged to read code from others.
 */
 
-s.boot;
+s.reboot;
 
 // define our synth - a basic sine pluck.
 (
@@ -23,11 +23,9 @@ SynthDef(\pluck,
 		Out.ar(0, sig);
 	}
 ).add;
-)
 
-// quick test
 Synth(\pluck);
-
+)
 
 /*
 LIST PATTERNS
@@ -39,8 +37,9 @@ I believe the .play message schedules audio events on the audio server but we'll
 E5 (76) → D#5 (75) → E5 (76) → D#5 (75) → E5 (76) → B4 (71) → D5 (74) → C5 (72) → A4 (69).
 */
 
+
 // testing Pbind. Press `Ctrl + .` to stop
-Pbind().play;
+// Pbind().play;
 
 ~notes = [76, 75, 76, 75, 76, 71, 74, 72, 69];
 // Pbind needs Patterns in order to properly sequence musical events.
@@ -90,12 +89,97 @@ Pbind(
 
 // is there a more elegant way to pack the musical event data?
 // one approach is n-tuples of data e.g. [note,dur, etc]
+// SuperCollider allows us to do this! We can bundle the values of musical parameters into a single "Event". This would be called a dictionary in Python.
+(
+~melody = [
+    (midinote: 76, dur: ~qter),
+    (midinote: 75, dur: ~qter),
+    (midinote: 76, dur: ~qter),
+    (midinote: 75, dur: ~qter),
+    (midinote: 76, dur: ~qter),
+    (midinote: 71, dur: ~qter + ~sixt),
+    (midinote: 74, dur: ~qter + ~sixt),
+    (midinote: 72, dur: ~qter + ~sixt),
+    (midinote: 69, dur: ~qter + ~half)
+];
+)
+
+// this can be played with just Pseq.
+(
+Pseq(~melody).play;
+)
+
+(
+Pchain(
+    Pbind(
+        \instrument, \pluck,
+        \amp, 0.2
+    ),
+    Pseq(~melody, 1)
+).play;
+)
 
 
 /*
 MORE INTERESTING PROPERTIES OF Pbind
 - Lets us notate music in terms of scales and scale degrees.
 */
+
+// The shortest Pattern sequence determines the overall length of the sequence
+(
+Pbind(
+	\instrument, \pluck,
+	\midinote, Pseq(~notes, repeats:2),
+	\dur, Pseq(~timing, repeats: 4)
+).play;
+)
+
+// We can transpose without needing to rewrite the notes
+(
+Pbind(
+	\instrument, \pluck,
+	\midinote, Pseq(~notes, repeats: 2),
+	\dur, Pseq(~timing, repeats: 2),
+	\ctranspose, 2
+).play;
+)
+
+// We can sequence Pbinds!
+(
+var p1, p2, p3, p4, p5;
+p1 = Pbind(
+	\instrument, \default,
+	\midinote, Pseq(~notes),
+	\dur, Pseq(~timing)
+);
+p2 = Pbind(
+	\instrument, \pluck,
+	\midinote, Pseq(~notes),
+	\dur, Pseq(~timing),
+	\ctranspose, 4
+);
+p3 = Pbind(
+	\instrument, \pluck,
+	\midinote, Pseq(~notes),
+	\dur, Pseq(~timing),
+	\ctranspose, 2
+);
+p4 = Pbind(
+	\instrument, \pluck,
+	\midinote, Pseq(~notes),
+	\dur, Pseq(~timing),
+	\ctranspose, 3
+);
+p3 = Pbind(
+	\instrument, \pluck,
+	\midinote, Pseq(~notes),
+	\dur, Pseq(~timing),
+	\ctranspose, 1
+);
+
+Pseq([p1, p2, p3, p4, p5]).play;
+)
+
 
 
 // FREE ALL

@@ -1,0 +1,5 @@
+
+Using patterns, one writes what is supposed to happen, rather than how to accomplish it.
+Patterns are declarative, not imperative.
+
+
